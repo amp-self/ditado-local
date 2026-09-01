@@ -1,0 +1,21 @@
+{
+  "_leia": "Copie este arquivo para vocabulario.json e troque pelos SEUS termos. Duas camadas, e o tamanho da primeira e o ponto delicado. Medido em 31/08/2026: 69 termos como hotwords derrubaram o acerto para 9/11 E mataram a pontuacao (zero pontos, zero virgulas); 15 termos separados por virgula deram 11/11 com a melhor pontuacao. Lista longa dilui o sinal. Por isso 'prioritarios' e curta de proposito -- termo novo entra em 'correcoes', nao aqui, a menos que erre com frequencia.",
+  "prioritarios": [
+    "NomeDaSuaEmpresa",
+    "SeuProduto",
+    "OKR",
+    "NPS",
+    "CSAT",
+    "ditar",
+    "ditado"
+  ],
+  "_correcoes": "Aplicadas DEPOIS da transcricao, por substituicao literal. E aqui que entra tudo o que nao cabe nas hotwords. A interface de historico (http://127.0.0.1:4772) escreve nesta secao quando voce corrige um texto.",
+  "correcoes": {
+    "Substek": "Substack",
+    "Whisperflow": "Wispr Flow",
+    "UKR": "OKR",
+    "O.K.R": "OKR",
+    "SESAT": "CSAT",
+    "C-SAT": "CSAT"
+  }
+}

@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ditado local — histórico</title>
+<style>
+  :root {
+    --fundo: #14161a;
+    --cartao: #1c1f25;
+    --cartao-borda: #2a2f38;
+    --texto: #e6e8ec;
+    --apagado: #8b93a1;
+    --destaque: #ff9500;
+    --ok: #34c759;
+    --acao: #2f6fed;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 28px 22px 60px;
+    background: var(--fundo); color: var(--texto);
+    font: 15px/1.55 "Segoe UI", system-ui, sans-serif;
+  }
+  header { max-width: 780px; margin: 0 auto 22px; }
+  h1 { font-size: 19px; margin: 0 0 4px; font-weight: 600; letter-spacing: .2px; }
+  .sub { color: var(--apagado); font-size: 13px; }
+  .lista { max-width: 780px; margin: 0 auto; display: flex; flex-direction: column; gap: 14px; }
+  .cartao {
+    background: var(--cartao); border: 1px solid var(--cartao-borda);
+    border-radius: 10px; padding: 14px 16px;
+  }
+  .topo {
+    display: flex; align-items: center; gap: 12px;
+    font-size: 12px; color: var(--apagado); margin-bottom: 10px; flex-wrap: wrap;
+  }
+  .hora { color: var(--texto); font-weight: 600; font-size: 13px; }
+  .texto {
+    width: 100%; background: #0f1114; color: var(--texto);
+    border: 1px solid var(--cartao-borda); border-radius: 7px;
+    padding: 10px 12px; font: inherit; resize: vertical; min-height: 62px;
+  }
+  .texto:focus { outline: none; border-color: var(--acao); }
+  .barra { display: flex; align-items: center; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+  button {
+    background: #262b33; color: var(--texto); border: 1px solid var(--cartao-borda);
+    border-radius: 6px; padding: 6px 12px; font: inherit; font-size: 13px; cursor: pointer;
+  }
+  button:hover { background: #303742; }
+  button.salvar { border-color: #3a5fa8; }
+  button:disabled { opacity: .45; cursor: default; }
+  audio { height: 30px; flex: 1; min-width: 190px; }
+  .aviso { font-size: 12.5px; margin-top: 8px; min-height: 17px; }
+  .aviso.bom { color: var(--ok); }
+  .aviso.neutro { color: var(--apagado); }
+  .vazio { color: var(--apagado); text-align: center; padding: 50px 0; max-width: 780px; margin: 0 auto; }
+  .alterado { border-color: var(--destaque) !important; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Ditado local — histórico</h1>
+  <div class="sub">
+    O texto foi para onde o cursor estava. Se caiu no lugar errado, está aqui.
+    Corrija uma palavra e clique em <strong>ensinar</strong> — a troca entra no vocabulário
+    e vale para os próximos ditados.
+  </div>
+</header>
+<div class="lista" id="lista"></div>
+
+<script>
+const lista = document.getElementById('lista');
+
+// Cards já na tela. A atualização é INCREMENTAL de propósito: recriar a lista a cada
+// ciclo apagava o texto que estava sendo editado antes de dar tempo de clicar
+// em "ensinar". Card existente nunca é tocado; só entram os novos, no topo.
+const vistos = new Set();
+
+// Identidade de um ditado. Não basta o nome do áudio: se dois registros
+// apontarem para o mesmo arquivo, o segundo seria descartado como repetido e
+// nunca apareceria na tela.
+function chave(d) { return d.quando + '|' + d.audio; }
+
+function fmtHora(iso) {
+  try {
+    const d = new Date(iso);
+    return d.toLocaleTimeString('pt-BR', {hour: '2-digit', minute: '2-digit', second: '2-digit'})
+         + ' · ' + d.toLocaleDateString('pt-BR', {day: '2-digit', month: 'short'});
+  } catch (e) { return iso; }
+}
+
+async function carregar() {
+  let dados;
+  try {
+    const r = await fetch('/api/historico');
+    dados = await r.json();
+  } catch (e) { return; }          // servico caiu: mantem o que está na tela
+
+  const vazio = document.getElementById('vazio');
+  if (!dados.length) {
+    if (!vazio) {
+      lista.innerHTML = '<div class="vazio" id="vazio">Nada ditado ainda.<br>'
+                      + 'Segure Ctrl+Win e fale.</div>';
+    }
+    return;
+  }
+  if (vazio) { vazio.remove(); }
+
+  // Só os que ainda não estão na tela. A API devolve do mais recente para o mais
+  // antigo, então percorrer de trás para frente e inserir no topo preserva a ordem.
+  const novos = dados.filter(function (d) { return !vistos.has(chave(d)); });
+  for (let i = novos.length - 1; i >= 0; i--) {
+    vistos.add(chave(novos[i]));
+    lista.insertBefore(montarCartao(novos[i]), lista.firstChild);
+  }
+}
+
+function montarCartao(d) {
+    const cartao = document.createElement('div');
+    cartao.className = 'cartao';
+
+    const topo = document.createElement('div');
+    topo.className = 'topo';
+    topo.innerHTML = '<span class="hora">' + fmtHora(d.quando) + '</span>'
+      + '<span>' + d.segundos_audio.toFixed(1) + 's de fala</span>'
+      + '<span>→ ' + d.segundos_transcricao.toFixed(2) + 's</span>'
+      + '<span>' + (d.texto || '').length + ' caracteres</span>';
+    cartao.appendChild(topo);
+
+    const area = document.createElement('textarea');
+    area.className = 'texto';
+    area.value = d.texto || '';
+    area.rows = Math.min(8, Math.max(2, Math.ceil((d.texto || '').length / 78)));
+    cartao.appendChild(area);
+
+    const barra = document.createElement('div');
+    barra.className = 'barra';
+
+    const copiar = document.createElement('button');
+    copiar.textContent = 'copiar';
+    copiar.onclick = function () {
+      navigator.clipboard.writeText(area.value).then(function () {
+        copiar.textContent = 'copiado';
+        setTimeout(function () { copiar.textContent = 'copiar'; }, 1400);
+      });
+    };
+    barra.appendChild(copiar);
+
+    const ensinar = document.createElement('button');
+    ensinar.textContent = 'ensinar';
+    ensinar.className = 'salvar';
+    ensinar.disabled = true;
+    barra.appendChild(ensinar);
+
+    const som = document.createElement('audio');
+    som.controls = true;
+    som.preload = 'none';
+    som.src = '/audio/' + d.audio;
+    barra.appendChild(som);
+
+    cartao.appendChild(barra);
+
+    const aviso = document.createElement('div');
+    aviso.className = 'aviso neutro';
+    cartao.appendChild(aviso);
+
+    // `original` avança a cada ensinamento aceito: sem isso, uma segunda
+    // correção no mesmo card compararia contra o texto transcrito lá do início
+    // e reenviaria a troca anterior junto.
+    let original = d.texto || '';
+    area.addEventListener('input', function () {
+      const mudou = area.value !== original;
+      ensinar.disabled = !mudou;
+      area.classList.toggle('alterado', mudou);
+      if (!mudou) { aviso.textContent = ''; }
+    });
+
+    ensinar.onclick = async function () {
+      ensinar.disabled = true;
+      aviso.className = 'aviso neutro';
+      aviso.textContent = 'salvando...';
+      const r = await fetch('/api/correcao', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({antes: original, depois: area.value})
+      });
+      const res = await r.json();
+      if (res.novos && res.novos.length) {
+        original = area.value;
+        area.classList.remove('alterado');
+        aviso.className = 'aviso bom';
+        aviso.textContent = 'aprendido: ' + res.novos.map(function (n) {
+          return n.errado + ' → ' + n.certo;
+        }).join(', ');
+      } else {
+        aviso.className = 'aviso neutro';
+        aviso.textContent = res.aviso || 'nada novo para aprender.';
+        ensinar.disabled = false;          // deixa tentar de novo com outra edição
+      }
+    };
+
+    return cartao;
+}
+
+carregar();
+// 2s, e não 8: a busca é local e lê um arquivo pequeno, então o custo é nulo,
+// e o ditado aparecer no histórico enquanto você ainda está olhando para a tela
+// é o que faz a página servir de rede de segurança. Com 8s a espera era visível.
+setInterval(carregar, 2000);
+</script>
+</body>
+</html>

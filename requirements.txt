@@ -1,0 +1,7 @@
+faster-whisper
+numpy
+sounddevice
+pynput
+
+# so para a bancada de medicao (opcional):
+# jiwer

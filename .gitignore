@@ -1,0 +1,12 @@
+# ambiente
+.venv/
+__pycache__/
+
+# dados pessoais -- a sua voz e o que voce ditou ficam SO na sua maquina
+historico/
+amostras/
+resultados.json
+vocabulario.json
+_vocab_bruto.json
+.microfone
+*.log
