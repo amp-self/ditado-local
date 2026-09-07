@@ -67,3 +67,7 @@ The measuring bench is reusable too: record two or three samples of your own voi
 ## Notes
 
 Built for Brazilian Portuguese dictation (`language: "pt"` in `config.py`; change it for yours). The code and comments are in Portuguese: I built this for my own daily use, and I am publishing it as it runs on my machine.
+
+## License
+
+MIT. Use it, change it, ship it; keep the notice.
