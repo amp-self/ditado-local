@@ -2,6 +2,7 @@ faster-whisper
 numpy
 sounddevice
 pynput
+pyperclip
 
 # so para a bancada de medicao (opcional):
 # jiwer
