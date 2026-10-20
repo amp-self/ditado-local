@@ -1,4 +1,7 @@
 faster-whisper
+# o PyAV 19 tirou o argumento metadata_errors, que o faster-whisper 1.2.1 ainda
+# passa: com ele, a transcricao por caminho de arquivo (bancada.py) quebra
+av<19
 numpy
 sounddevice
 pynput

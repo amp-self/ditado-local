@@ -42,13 +42,33 @@ Every choice below came out of a measuring bench (`bancada.py`), so the numbers 
    .venv\Scripts\pip install -r requirements.txt
    ```
 
-3. A CUDA-capable GPU is recommended. CPU works with the same code, 9x slower on my bench; set `DEVICE = "cpu"` in `config.py`.
+3. An NVIDIA GPU is recommended. CPU works with the same code, 9x slower on my bench: set `DEVICE = "cpu"` in `config.py` and go to step 4. On the GPU, three more things:
+
+   - Install cuBLAS, which `ctranslate2` loads at runtime and does not ship (about 570 MB):
+
+     ```
+     .venv\Scripts\pip install -r requirements-gpu.txt
+     ```
+
+   - Add its folder to your user PATH. In PowerShell, from the `ditado-local` folder, then open a new terminal:
+
+     ```
+     $bin = (Resolve-Path .venv).Path + '\Lib\site-packages\nvidia\cublas\bin'
+     $p = [Environment]::GetEnvironmentVariable('Path', 'User')
+     [Environment]::SetEnvironmentVariable('Path', "$p;$bin", 'User')
+     ```
+
+     Without it, the model loads and the first dictation fails with `Library cublas64_12.dll is not found or cannot be loaded`.
+
+   - On a Pascal card or older (GTX 10 series, MX150), get the driver from NVIDIA's driver search, not from the NVIDIA App, which refuses these cards. Restart before you measure anything: right after the driver install, the card can stay at a low clock and run slower than the CPU.
 
 4. Pre-fetch the model, one time, connected to the internet (the service itself runs offline, with `local_files_only=True`):
 
    ```
    .venv\Scripts\python -c "from faster_whisper import download_model; download_model('large-v3-turbo')"
    ```
+
+   The model takes about 1.6 GB in the Hugging Face cache, under your user folder. To keep it on another disk, set the `HF_HOME` environment variable to a folder there before this step, and leave it set.
 
 5. Copy `vocabulario.example.json` to `vocabulario.json` and put your own terms in it.
 
