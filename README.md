@@ -42,20 +42,12 @@ Every choice below came out of a measuring bench (`bancada.py`), so the numbers 
    .venv\Scripts\pip install -r requirements.txt
    ```
 
-3. An NVIDIA GPU is recommended. CPU works with the same code, 9x slower on my bench: set `DEVICE = "cpu"` in `config.py` and go to step 4. On the GPU, three more things:
+3. An NVIDIA GPU is recommended. CPU works with the same code, 9x slower on my bench: set `DEVICE = "cpu"` in `config.py` and go to step 4. On the GPU, two more things:
 
-   - Install cuBLAS, which `ctranslate2` loads at runtime and does not ship (about 570 MB):
+   - Install cuBLAS, which `ctranslate2` loads at runtime and does not ship (about 570 MB). The service finds it inside the venv, so there is nothing to add to your PATH:
 
      ```
      .venv\Scripts\pip install -r requirements-gpu.txt
-     ```
-
-   - Add its folder to your user PATH. In PowerShell, from the `ditado-local` folder, then open a new terminal:
-
-     ```
-     $bin = (Resolve-Path .venv).Path + '\Lib\site-packages\nvidia\cublas\bin'
-     $p = [Environment]::GetEnvironmentVariable('Path', 'User')
-     [Environment]::SetEnvironmentVariable('Path', "$p;$bin", 'User')
      ```
 
      Without it, the model loads and the first dictation fails with `Library cublas64_12.dll is not found or cannot be loaded`.

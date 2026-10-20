@@ -7,6 +7,12 @@ transcricao costuma errar) e edite GLOSSARIO e TERMOS abaixo com o SEU mundo:
 nomes de empresa, de pessoa e siglas que voce dita todo dia."""
 import os, sys, time, json, wave, io
 
+# O mesmo do ditado.py: o cuBLAS do requirements-gpu.txt entra no PATH deste
+# processo, e so dele. Sem o pacote, a pasta nao existe e nada muda.
+_CUBLAS = os.path.join(sys.prefix, "Lib", "site-packages", "nvidia", "cublas", "bin")
+if os.path.isdir(_CUBLAS):
+    os.environ["PATH"] = _CUBLAS + os.pathsep + os.environ.get("PATH", "")
+
 RAIZ = os.path.dirname(os.path.abspath(__file__))
 AMOSTRAS = os.path.join(RAIZ, "amostras")
 

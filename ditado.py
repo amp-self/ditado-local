@@ -24,6 +24,14 @@ import datetime
 import traceback
 import re
 
+# GPU NVIDIA no Windows: o ctranslate2 carrega o cuBLAS em tempo de execucao e
+# nao o traz na wheel. Quem instalou o requirements-gpu.txt tem o cuBLAS dentro
+# do venv; a pasta dele entra no PATH deste processo, e so dele. Sem o pacote,
+# a pasta nao existe e nada muda.
+_CUBLAS = os.path.join(sys.prefix, "Lib", "site-packages", "nvidia", "cublas", "bin")
+if os.path.isdir(_CUBLAS):
+    os.environ["PATH"] = _CUBLAS + os.pathsep + os.environ.get("PATH", "")
+
 import numpy as np
 import sounddevice as sd
 from pynput import keyboard

@@ -1,5 +1,6 @@
 # So para GPU NVIDIA no Windows; instale depois do requirements.txt.
-# O ctranslate2 carrega o cuBLAS em tempo de execucao e nao o traz na wheel.
-# Medido em 20/10/2026 numa GTX 1050 Ti, com o ctranslate2 4.8.3: o cuBLAS no
-# PATH basta, e o cuDNN nao precisou entrar.
+# O ctranslate2 carrega o cuBLAS em tempo de execucao e nao o traz na wheel; o
+# ditado.py e o bancada.py poem a pasta dele no PATH do proprio processo.
+# Medido em 20/10/2026 numa GTX 1050 Ti, com o ctranslate2 4.8.3: o cuBLAS
+# basta, e o cuDNN nao precisou entrar.
 nvidia-cublas-cu12==12.8.4.1
